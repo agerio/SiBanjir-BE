@@ -1,0 +1,9 @@
+[
+    {
+        "model": "example.helloworld",
+        "pk": 1,
+        "fields": {
+            "text": "Hello World!"
+        }
+    }
+]

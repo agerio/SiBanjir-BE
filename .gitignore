@@ -112,6 +112,7 @@ tox.ini
 .fseventsd
 
 # Windows
+env.bat
 Thumbs.db
 ehthumbs.db
 Desktop.ini
