@@ -1,17 +1,17 @@
 {
-  "routes": [
-      {
-          "src": "/(.*)",
-          "dest": "api/wsgi.py"
-      }
-  ],
   "builds": [
     {
-      "src": "app.py",
+      "src": "api/wsgi.py",
       "use": "@vercel/python",
       "config": {
         "installCommand": "apt-get update && apt-get install -y libpq-dev && pip install -r requirements.txt"
       }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "api/wsgi.py"
     }
   ]
 }
