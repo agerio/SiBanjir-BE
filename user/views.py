@@ -34,9 +34,6 @@ class UserLoginView(APIView):
             return Response({'message': 'Login successful','token': token.key}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-
-
-
 class SomeProtectedView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
