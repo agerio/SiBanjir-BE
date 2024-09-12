@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from user.models import *
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 
@@ -38,4 +39,27 @@ class UserLoginSerializer(serializers.Serializer):
             raise serializers.ValidationError("Username and password are required.")
         
         attrs['user'] = user
+        return attrs
+
+class SendInvitationSerializer(serializers.Serializer):
+    recipient_username = serializers.CharField(required=True)
+    
+
+    def validate(self, attrs):
+        if not User.objects.filter(username=attrs['recipient_username']).exists():
+            raise serializers.ValidationError("Recipient does not exist.")
+        return attrs
+
+class listInvitationSerializer(serializers.Serializer):
+    sender = serializers.CharField(source='sender.username')
+    class Meta:
+        model = Invitation
+        fields = ["sender"]
+
+class createFriendsSerializer(serializers.Serializer):
+    sender = serializers.CharField(required=True)
+
+    def validate(self, attrs):
+        if not User.objects.filter(username=attrs['sender']).exists():
+            raise serializers.ValidationError("sender does not exist.")
         return attrs

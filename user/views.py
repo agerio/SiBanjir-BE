@@ -1,16 +1,15 @@
-from django.shortcuts import render
 
-# Create your views here.
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializer import UserRegistrationSerializer
-from .serializer import UserLoginSerializer
+from .serializer import UserRegistrationSerializer, UserLoginSerializer, SendInvitationSerializer, listInvitationSerializer, createFriendsSerializer
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import login
 from django.contrib.auth.models import User
+from user.models import Invitation, friends
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+
 
 class UserRegistrationView(APIView):
     def post(self, request, *args, **kwargs):
@@ -33,10 +32,51 @@ class UserLoginView(APIView):
             token, created = Token.objects.get_or_create(user=user) 
             return Response({'message': 'Login successful','token': token.key}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+        
 class SomeProtectedView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         return Response({"message": "This is a protected view!"})
+    
+class SendInvitationView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request, *args, **kwargs):
+        serializer = SendInvitationSerializer(data=request.data)
+        if serializer.is_valid():
+            recipient = User.objects.get(username=serializer.validated_data['recipient_username'])
+        
+            Invitation.objects.create(
+                sender=request.user,
+                recipient=recipient,
+            )
+            return Response({"message": "Invitation sent successfully"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class listInvitationView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def get(self, request, *args, **kwargs):
+        user = User.objects.get(username=request.user)
+        invitation = Invitation.objects.filter(recipient=user)
+        serializer = listInvitationSerializer(invitation, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class createFriend(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request, *args, **kwargs):
+        serializer = createFriendsSerializer(data=request.data)
+        if serializer.is_valid():
+            sender = User.objects.get(username=serializer.validated_data['sender'])
+            friends.objects.create(
+                username= request.user,
+                friend = sender
+            )
+            return Response({"message": "friend added successfully"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
