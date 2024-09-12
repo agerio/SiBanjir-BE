@@ -56,6 +56,10 @@ class SendInvitationView(APIView):
             return Response({"message": "Invitation sent successfully"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+    def delete(self, request, *args, **kwargs):
+        pass
+    
+    
 class listInvitationView(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
@@ -80,3 +84,6 @@ class createFriend(APIView):
             )
             return Response({"message": "friend added successfully"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request, *args, **kwargs):
+        pass
