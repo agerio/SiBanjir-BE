@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'example',
     'user',
+    'specialwarning',
     'rest_framework.authtoken'
 ]
 
