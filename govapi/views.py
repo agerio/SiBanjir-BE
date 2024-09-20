@@ -1,15 +1,11 @@
-
 import ftplib
-import json
 import os
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 
-# Create your views here.
-
 class govapi(APIView):
-    def get(self ,request): 
+    def get(self, request):
         # FTP server details
         ftp_server = "ftp.bom.gov.au"
         file_path = "/anon/gen/fwo/IDQ65448.txt"
@@ -48,6 +44,5 @@ class govapi(APIView):
                 entry = {key: value.strip() for key, value in zip(keys, values)}
                 parsed_data.append(entry)
 
-        # Convert to JSON
-        json_data = json.dumps(parsed_data, indent=2)
-        return Response(json_data, status=status.HTTP_200_OK)
+        # Return the parsed data as a JSON response
+        return Response(parsed_data, status=status.HTTP_200_OK)
