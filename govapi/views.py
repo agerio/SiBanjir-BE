@@ -1,8 +1,8 @@
 import ftplib
-import os
+import io
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.views import APIView
+from rest_framework import status
 
 class govapi(APIView):
     def get(self, request):
@@ -10,24 +10,20 @@ class govapi(APIView):
         ftp_server = "ftp.bom.gov.au"
         file_path = "/anon/gen/fwo/IDQ65448.txt"
 
-        # Ensure the 'data' directory exists
-        os.makedirs('data', exist_ok=True)
-
         # Connect to the FTP server
         ftp = ftplib.FTP(ftp_server)
         ftp.login()  # Anonymous login
 
-        # Download the file to the 'data' folder
-        local_filename = 'data/IDQ65448.txt'
-        with open(local_filename, 'wb') as local_file:
-            ftp.retrbinary(f"RETR {file_path}", local_file.write)
+        # Use BytesIO for in-memory file storage
+        with io.BytesIO() as mem_file:
+            ftp.retrbinary(f"RETR {file_path}", mem_file.write)
+            mem_file.seek(0)  # Go back to the beginning of the file
+
+            # Read the downloaded content as text
+            data = mem_file.read().decode('utf-8').splitlines()
 
         # Close the FTP connection
         ftp.quit()
-
-        # Read the downloaded file
-        with open(local_filename, 'r') as file:
-            data = file.readlines()
 
         # Define the keys based on the header
         keys = [
@@ -37,7 +33,6 @@ class govapi(APIView):
 
         # Parse each line starting from the data section
         parsed_data = []
-
         for line in data:
             if line.strip() and not line.startswith("# HEADER:"):
                 values = line.split(",")
