@@ -3,45 +3,60 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.utils import timezone
-from .models import FloodWarning
+from .models import *
 from .serializer import *
+from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 # List and Create Flood Warnings
-class FloodWarningListCreateView(APIView):
+class SpecialFloodWarningListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        warnings = FloodWarning.objects.all()
+        warnings = SpecialFloodWarning.objects.all()
 
         print(request.data)
-        serializer = FloodWarningDeserializer(warnings, many=True)
+        serializer = SpecialFloodWarningDeserializer(warnings, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        # print(request.data)
+        # Create a mutable copy of the request data to modify it
+        data = request.data.copy()
 
-        serializer = FloodWarningSerializer(data=request.data)
+        # Automatically set the created_by and created_at fields
+        data['created_by'] = request.user.id  # Set the creator as the current user
+        data['created_at'] = timezone.now()   # Automatically set the current timestamp
+        
+        # Explicitly set 'verified_by' as an empty list or null equivalent
+        data['verified_by'] = []  # Setting it to an empty list as a placeholder
+
+        # Use the FloodWarningSerializer to validate and save
+        serializer = SpecialFloodWarningSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
-        return Response(serializer.error, status=status.HTTP_400_BAD_REQUEST)
 
-# Verify a Flood Warning
-class FloodWarningVerifyView(APIView):
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class VerifySpecialFloodWarningView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, pk):
-        try:
-            flood_warning = FloodWarning.objects.get(pk=pk, is_verified=False)
-        except FloodWarning.DoesNotExist:
-            return Response({"error": "Flood warning not found or already verified"}, status=status.HTTP_404_NOT_FOUND)
+    def get(self, request, pk):
+        # Fetch the flood warning by its ID
+        warning = get_object_or_404(SpecialFloodWarning, pk=pk)
 
-        # Verification logic
-        flood_warning.is_verified = True
-        flood_warning.verified_by = request.user
-        flood_warning.verified_at = timezone.now()
-        flood_warning.save()
+        # Check if the logged-in user is not the creator
+        if warning.created_by == request.user:
+            return Response({"detail": "You cannot verify your own warning."}, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = VerifyFloodWarningSerializer(flood_warning)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        # Check if the user has already verified this warning
+        if request.user in warning.verified_by.all():
+            return Response({"detail": "You have already verified this warning."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Add the user to the verified_by field and save
+        warning.verified_by.add(request.user)
+        warning.save()
+
+        return Response({"detail": "Warning verified successfully."}, status=status.HTTP_200_OK)
