@@ -8,8 +8,10 @@ from django.contrib.auth.models import User
 from user.models import Invitation, friends
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class UserRegistrationView(APIView):
     authentication_classes = [TokenAuthentication]
     def post(self, request, *args, **kwargs):
