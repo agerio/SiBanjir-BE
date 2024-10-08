@@ -16,22 +16,14 @@ class SpecialFloodWarningListCreateView(APIView):
     def get(self, request):
         warnings = SpecialFloodWarning.objects.all()
 
-        print(request.data)
-        serializer = SpecialFloodWarningDeserializer(warnings, many=True)
+        serializer = SpecialFloodWarningSerializer(warnings, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        # Create a mutable copy of the request data to modify it
         data = request.data.copy()
+        data['created_by'] = request.user.id
+        data['created_at'] = timezone.now()
 
-        # Automatically set the created_by and created_at fields
-        data['created_by'] = request.user.id  # Set the creator as the current user
-        data['created_at'] = timezone.now()   # Automatically set the current timestamp
-        
-        # Explicitly set 'verified_by' as an empty list or null equivalent
-        data['verified_by'] = []  # Setting it to an empty list as a placeholder
-
-        # Use the FloodWarningSerializer to validate and save
         serializer = SpecialFloodWarningSerializer(data=data)
         if serializer.is_valid():
             serializer.save()

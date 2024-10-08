@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,11 +42,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'cloudinary',
+    'cloudinary_storage',
     'corsheaders',
     'example',
     'user',
     'specialwarning',
-    'rest_framework.authtoken'
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -128,6 +133,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+MEDIA_URL = 'media/'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -143,3 +150,11 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ),
 }
+
+cloudinary.config(
+    cloud_name = 'dv5juab86',
+    api_key = '314793469875947',
+    api_secret = 'GW676wHbiOHqc7M7m7UADEZ6iyI'
+)
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'

@@ -44,6 +44,24 @@ class UserInformation(APIView):
         serializer = UserInformationDeserializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+class UserProfileView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        user_profile, created = UserProfile.objects.get_or_create(user=user)
+
+        if 'profile_picture' in request.data:
+            profile_picture = request.data['profile_picture']
+            user_profile.profile_picture = profile_picture
+            user_profile.save()
+
+            serializer = UserProfileSerializer(user_profile)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "Profile picture not provided."}, status=status.HTTP_400_BAD_REQUEST)
+
 class SomeProtectedView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
