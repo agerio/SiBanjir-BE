@@ -5,13 +5,13 @@ from .serializer import *
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import login
 from django.contrib.auth.models import User
-from user.models import Invitation, friends
+from user.models import Invitation, friends, userprofile
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
-@method_decorator(csrf_exempt, name='dispatch')
+
 class UserRegistrationView(APIView):
     authentication_classes = [TokenAuthentication]
     def post(self, request, *args, **kwargs):
@@ -110,3 +110,19 @@ class DeleteInvitationView(APIView):  # New view for deleting invitations
             return Response({"error": "Invitation not found"}, status=status.HTTP_404_NOT_FOUND)
         except User.DoesNotExist:
             return Response({"error": "Sender or recipient not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+
+class ProfileUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def patch(self, request, *args, **kwargs):
+        user = User.objects.get(username=request.user)
+        serializer = ProfileUpdateSerializer(data=request.data)
+        if serializer.is_valid():
+            userprofile.objects.create(
+                telephone_number=serializer.validated_data['telephone_number'],
+                user=request.user,
+            )
+            return Response({"message": "Profile updated successfully"}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

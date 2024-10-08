@@ -80,3 +80,8 @@ class createFriendsSerializer(serializers.Serializer):
         if not User.objects.filter(username=attrs['sender']).exists():
             raise serializers.ValidationError("Sender does not exist.")
         return attrs
+    
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = userprofile
+        fields = ['telephone_number']
