@@ -11,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 
 
 class UserRegistrationView(APIView):
+    authentication_classes = [TokenAuthentication]
     def post(self, request, *args, **kwargs):
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
