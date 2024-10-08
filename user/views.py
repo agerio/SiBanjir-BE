@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializer import UserRegistrationSerializer, UserLoginSerializer, SendInvitationSerializer, listInvitationSerializer, createFriendsSerializer
+from .serializer import *
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import login
 from django.contrib.auth.models import User
@@ -32,6 +32,15 @@ class UserLoginView(APIView):
             return Response({'message': 'Login successful', 'token': token.key}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
+class UserInformation(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        serializer = UserInformationDeserializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 class SomeProtectedView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]

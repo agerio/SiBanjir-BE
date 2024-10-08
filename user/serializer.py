@@ -41,6 +41,11 @@ class UserLoginSerializer(serializers.Serializer):
         attrs['user'] = user
         return attrs
 
+class UserInformationDeserializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        exclude = ('password', 'id')
+
 class SendInvitationSerializer(serializers.Serializer):
     recipient_username = serializers.CharField(required=True)
 
