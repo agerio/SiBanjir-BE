@@ -1,4 +1,3 @@
-
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -30,7 +29,7 @@ class UserLoginView(APIView):
             user = serializer.validated_data['user']
             login(request, user)  # Log in the user and create a session
             token, created = Token.objects.get_or_create(user=user) 
-            return Response({'message': 'Login successful','token': token.key}, status=status.HTTP_200_OK)
+            return Response({'message': 'Login successful', 'token': token.key}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 class UserInformation(APIView):
@@ -54,20 +53,15 @@ class SendInvitationView(APIView):
     authentication_classes = [TokenAuthentication]
 
     def post(self, request, *args, **kwargs):
-        serializer = SendInvitationSerializer(data=request.data)
+        serializer = SendInvitationSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             recipient = User.objects.get(username=serializer.validated_data['recipient_username'])
-        
             Invitation.objects.create(
                 sender=request.user,
                 recipient=recipient,
             )
             return Response({"message": "Invitation sent successfully"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def delete(self, request, *args, **kwargs):
-        pass
-    
     
 class listInvitationView(APIView):
     permission_classes = [IsAuthenticated]
@@ -88,11 +82,28 @@ class createFriend(APIView):
         if serializer.is_valid():
             sender = User.objects.get(username=serializer.validated_data['sender'])
             friends.objects.create(
-                username= request.user,
-                friend = sender
+                username=request.user,
+                friend=sender
             )
-            return Response({"message": "friend added successfully"}, status=status.HTTP_201_CREATED)
+            return Response({"message": "Friend added successfully"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
+class DeleteInvitationView(APIView):  # New view for deleting invitations
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
     def delete(self, request, *args, **kwargs):
-        pass
+        sender_username = request.data.get('sender_username')
+        recipient_username = request.data.get('recipient_username')
+
+        try:
+            sender = User.objects.get(username=sender_username)
+            recipient = User.objects.get(username=recipient_username)
+            invitation = Invitation.objects.get(sender=sender, recipient=recipient)
+            invitation.delete()
+            return Response({"message": "Invitation deleted successfully"}, status=status.HTTP_200_OK)
+        except Invitation.DoesNotExist:
+            return Response({"error": "Invitation not found"}, status=status.HTTP_404_NOT_FOUND)
+        except User.DoesNotExist:
+            return Response({"error": "Sender or recipient not found"}, status=status.HTTP_404_NOT_FOUND)

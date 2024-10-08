@@ -48,15 +48,27 @@ class UserInformationDeserializer(serializers.ModelSerializer):
 
 class SendInvitationSerializer(serializers.Serializer):
     recipient_username = serializers.CharField(required=True)
-    
 
     def validate(self, attrs):
-        if not User.objects.filter(username=attrs['recipient_username']).exists():
+        recipient_username = attrs.get('recipient_username')
+        user = self.context['request'].user
+        
+        if user.username == recipient_username:
+            raise serializers.ValidationError("You cannot invite yourself.")
+
+        if not User.objects.filter(username=recipient_username).exists():
             raise serializers.ValidationError("Recipient does not exist.")
+
+        recipient = User.objects.get(username=recipient_username)
+
+        if Invitation.objects.filter(sender=user, recipient=recipient).exists():
+            raise serializers.ValidationError("You have already sent an invitation to this user.")
+
         return attrs
 
 class listInvitationSerializer(serializers.Serializer):
     sender = serializers.CharField(source='sender.username')
+
     class Meta:
         model = Invitation
         fields = ["sender"]
@@ -66,5 +78,5 @@ class createFriendsSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         if not User.objects.filter(username=attrs['sender']).exists():
-            raise serializers.ValidationError("sender does not exist.")
+            raise serializers.ValidationError("Sender does not exist.")
         return attrs
