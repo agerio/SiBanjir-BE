@@ -29,8 +29,8 @@ class SpecialFloodWarningListCreateView(APIView):
         data['created_at'] = timezone.now()   # Automatically set the current timestamp
         
         # Explicitly set 'verified_by' as an empty list or null equivalent
-        data['verified_by'] = []  # Setting it to an empty list as a placeholder
-
+        # data['verified_by'] = []  # Setting it to an empty list as a placeholder
+        print(data)
         # Use the FloodWarningSerializer to validate and save
         serializer = SpecialFloodWarningSerializer(data=data)
         if serializer.is_valid():
