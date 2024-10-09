@@ -22,7 +22,7 @@ from example.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/user', include('user.urls')),
+    path('api/user/', include('user.urls')),
     path('api/specialwarning', include('specialwarning.urls')),
     path('api/govapi', include('govapi.urls')),
     path('', ExampleView.as_view(), name="example"),

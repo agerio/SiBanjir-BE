@@ -108,8 +108,7 @@ class createFriend(APIView):
             )
             return Response({"message": "Friend added successfully"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
+    
 class DeleteInvitationView(APIView):  # New view for deleting invitations
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
@@ -117,7 +116,6 @@ class DeleteInvitationView(APIView):  # New view for deleting invitations
     def delete(self, request, *args, **kwargs):
         sender_username = request.data.get('sender_username')
         recipient_username = request.data.get('recipient_username')
-
         try:
             sender = User.objects.get(username=sender_username)
             recipient = User.objects.get(username=recipient_username)
