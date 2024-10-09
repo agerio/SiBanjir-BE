@@ -5,7 +5,7 @@ from .serializer import *
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import login
 from django.contrib.auth.models import User
-from user.models import Invitation, friends, userprofile
+from user.models import Invitation, friends, UserProfile
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt
@@ -43,6 +43,24 @@ class UserInformation(APIView):
         user = request.user
         serializer = UserInformationDeserializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class updateUserImage(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        user_profile, created = UserProfile.objects.get_or_create(user=user)
+
+        if 'profile_picture' in request.data:
+            profile_picture = request.data['profile_picture']
+            user_profile.profile_picture = profile_picture
+            user_profile.save()
+
+            serializer = UserProfileSerializer(user_profile)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "Profile picture not provided."}, status=status.HTTP_400_BAD_REQUEST)
 
 class SomeProtectedView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -111,16 +129,15 @@ class DeleteInvitationView(APIView):  # New view for deleting invitations
         except User.DoesNotExist:
             return Response({"error": "Sender or recipient not found"}, status=status.HTTP_404_NOT_FOUND)
         
-
-class ProfileUpdateView(APIView):
+class  updateTelephone(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
 
     def patch(self, request, *args, **kwargs):
         user = request.user  
         try:
-            user_profile = userprofile.objects.get(user=user)
-        except userprofile.DoesNotExist:
+            user_profile = UserProfile.objects.get(user=user)
+        except UserProfile.DoesNotExist:
             user_profile = None
 
         serializer = ProfileUpdateSerializer(data=request.data)
@@ -128,8 +145,9 @@ class ProfileUpdateView(APIView):
             if user_profile:
                 user_profile.telephone_number = serializer.validated_data['telephone_number']
                 user_profile.save()
+                message = "Profile updated successfully"
             else:
-                userprofile.objects.create(
+                UserProfile.objects.create(
                     telephone_number=serializer.validated_data['telephone_number'],
                     user=request.user,
                 )

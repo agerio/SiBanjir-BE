@@ -41,10 +41,36 @@ class UserLoginSerializer(serializers.Serializer):
         attrs['user'] = user
         return attrs
 
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = '__all__'
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        
+        if instance.profile_picture:
+            representation['profile_picture'] = instance.profile_picture.url
+        else:
+            representation['profile_picture'] = None
+
+        return representation
+    
+
 class UserInformationDeserializer(serializers.ModelSerializer):
     class Meta:
         model = User
         exclude = ('password', 'id')
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        
+        if instance.profile_picture:
+            representation['profile_picture'] = instance.profile_picture.url
+        else:
+            representation['profile_picture'] = None
+
+        return representation
 
 class SendInvitationSerializer(serializers.Serializer):
     recipient_username = serializers.CharField(required=True)
@@ -83,5 +109,5 @@ class createFriendsSerializer(serializers.Serializer):
     
 class ProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = userprofile
+        model = UserProfile
         fields = ['telephone_number']
