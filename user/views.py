@@ -145,7 +145,6 @@ class  updateTelephone(APIView):
             if user_profile:
                 user_profile.telephone_number = serializer.validated_data['telephone_number']
                 user_profile.save()
-                message = "Profile updated successfully"
             else:
                 UserProfile.objects.create(
                     telephone_number=serializer.validated_data['telephone_number'],
