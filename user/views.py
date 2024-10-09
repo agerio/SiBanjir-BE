@@ -117,12 +117,21 @@ class ProfileUpdateView(APIView):
     authentication_classes = [TokenAuthentication]
 
     def patch(self, request, *args, **kwargs):
-        user = User.objects.get(username=request.user)
+        user = request.user  
+        try:
+            user_profile = userprofile.objects.get(user=user)
+        except userprofile.DoesNotExist:
+            user_profile = None
+
         serializer = ProfileUpdateSerializer(data=request.data)
         if serializer.is_valid():
-            userprofile.objects.create(
-                telephone_number=serializer.validated_data['telephone_number'],
-                user=request.user,
-            )
+            if user_profile:
+                user_profile.telephone_number = serializer.validated_data['telephone_number']
+                user_profile.save()
+            else:
+                userprofile.objects.create(
+                    telephone_number=serializer.validated_data['telephone_number'],
+                    user=request.user,
+                )
             return Response({"message": "Profile updated successfully"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
