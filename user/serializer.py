@@ -58,19 +58,18 @@ class UserProfileSerializer(serializers.ModelSerializer):
     
 
 class UserInformationDeserializer(serializers.ModelSerializer):
+    profile_picture = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         exclude = ('password', 'id')
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        
-        if instance.profile_picture:
-            representation['profile_picture'] = instance.profile_picture.url
-        else:
-            representation['profile_picture'] = None
-
-        return representation
+    def get_profile_picture(self, obj):
+        try:
+            profile = obj.profile
+            return profile.profile_picture.url if profile.profile_picture else None
+        except UserProfile.DoesNotExist:
+            return None
 
 class SendInvitationSerializer(serializers.Serializer):
     recipient_username = serializers.CharField(required=True)
