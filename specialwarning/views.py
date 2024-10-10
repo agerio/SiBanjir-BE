@@ -20,7 +20,7 @@ class SpecialFloodWarningListCreateView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        data = request.data.copy()
+        data = request.data
         data['created_by'] = request.user.id
         data['created_at'] = timezone.now()
 
