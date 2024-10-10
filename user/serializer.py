@@ -115,3 +115,23 @@ class usernameUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username']
+
+class passwordUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['old_passowrd','password','password2']
+
+        def validate(self, attrs):
+            user = self.context['request'].user 
+            if not user.check_password(attrs['old_password']):
+                raise serializers.ValidationError({"old_password": "Old password is not correct."})
+            
+            if attrs['password'] != attrs['password2']:
+                raise serializers.ValidationError({"password": "Password fields didn't match."})
+            return attrs
+        def save(self, **kwargs):
+            user = self.context['request'].user
+            new_password = self.validated_data['new_password']
+            user.set_password(new_password)  # This properly hashes the password
+            user.save()
+            return user

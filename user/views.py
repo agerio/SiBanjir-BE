@@ -163,4 +163,16 @@ class updateUsername(APIView):
             user.save()
             return Response({"message": "Profile updated successfully"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class UserRegistrationView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        serializer = passwordUpdateSerializer(data=request.data,context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Password updated successfully."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
