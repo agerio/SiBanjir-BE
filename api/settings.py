@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'example',
     'user',
     'specialwarning',
+    'notification',
     'rest_framework.authtoken',
     'cloudinary',
     'cloudinary_storage',
