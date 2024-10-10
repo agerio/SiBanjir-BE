@@ -14,4 +14,5 @@ urlpatterns = [
     path('profile/update/picture', updateUserImage.as_view(), name='picture-update'),
     path('profile/update/username', updateUsername.as_view(), name='username-update'),
     path('profile/update/password', updatePassword.as_view(), name='password-update'),
+    path('searchFriend', UserInformation.as_view(), name='search-user'),
 ]
