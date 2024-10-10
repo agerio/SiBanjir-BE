@@ -25,6 +25,7 @@ urlpatterns = [
     path('api/user/', include('user.urls')),
     path('api/specialwarning/', include('specialwarning.urls')),
     path('api/govapi/', include('govapi.urls')),
+    path('api/notification/',include('notification.urls')),
     path('', ExampleView.as_view(), name="example"),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
