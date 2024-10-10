@@ -71,6 +71,30 @@ class UserInformationDeserializer(serializers.ModelSerializer):
         except UserProfile.DoesNotExist:
             return None
 
+# class UserSearch(serializers.ModelSerializer):
+#     profile_picture = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = User
+
+#     def validate(self, attrs):
+#         recipient_username = attrs.get('recipient_username')
+#         user = self.context['request'].user
+
+#         if not User.objects.filter(username=recipient_username).exists():
+#             raise serializers.ValidationError("Recipient does not exist.")
+
+#         recipient = User.objects.get(username=recipient_username)
+
+
+
+    def get_profile_picture(self, obj):
+        try:
+            profile = obj.profile
+            return profile.profile_picture.url if profile.profile_picture else None
+        except UserProfile.DoesNotExist:
+            return None
+
 class SendInvitationSerializer(serializers.Serializer):
     recipient_username = serializers.CharField(required=True)
 

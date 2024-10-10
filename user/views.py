@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from .serializer import *
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import login
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User 
 from user.models import Invitation, friends, UserProfile
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -43,6 +43,15 @@ class UserInformation(APIView):
         user = request.user
         serializer = UserInformationDeserializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def post(self, request, *args, **kwargs):
+        serializer = SendInvitationSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            recipient = User.objects.get(username=serializer.validated_data['recipient_username'])
+            profile = UserProfile.object.get(user_id=recipient.id)
+            return Response(profile, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class updateUserImage(APIView):
     authentication_classes = [TokenAuthentication]
@@ -93,6 +102,21 @@ class listInvitationView(APIView):
         invitation = Invitation.objects.filter(recipient=user)
         serializer = listInvitationSerializer(invitation, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class FindUserByUsername(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def get(self, request):
+        username = request.query_params.get('username', '')
+        if not username:
+            return Response({"error": "Please provide a username"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(username=username)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
     
 class createFriend(APIView):
     permission_classes = [IsAuthenticated]
