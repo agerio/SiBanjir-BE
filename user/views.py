@@ -48,8 +48,8 @@ class UserInformation(APIView):
         serializer = SendInvitationSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             recipient = User.objects.get(username=serializer.validated_data['recipient_username'])
-            profile = UserProfile.object.get(user_id=recipient.id)
-            return Response(profile, status=status.HTTP_200_OK)
+            serializer = UserInformationDeserializer(recipient)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
