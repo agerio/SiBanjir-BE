@@ -12,4 +12,5 @@ urlpatterns = [
     path('deleteInvitation', DeleteInvitationView.as_view(), name='delete-invitation'),  # New endpoint for deleting invitations
     path('profile/update/telephoneNumber', updateTelephone.as_view(), name='telephone-update'),
     path('profile/update/picture', updateUserImage.as_view(), name='picture-update'),
+    path('profile/update/username', updateUsername.as_view(), name='username-update'),
 ]

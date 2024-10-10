@@ -110,3 +110,8 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ['telephone_number']
+
+class usernameUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username']
