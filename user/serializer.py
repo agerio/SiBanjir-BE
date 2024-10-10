@@ -116,22 +116,44 @@ class usernameUpdateSerializer(serializers.ModelSerializer):
         model = User
         fields = ['username']
 
-class passwordUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['old_passowrd','password','password2']
+class passwordUpdateSerializer(serializers.Serializer):
+    old_password = serializers.CharField(
+        required=True, 
+        write_only=True, 
+        style={'input_type': 'password'},
+        label="Old Password"
+    )
+    password = serializers.CharField(
+        required=True, 
+        write_only=True, 
+        style={'input_type': 'password'},
+        label="New Password"
+    )
+    password2 = serializers.CharField(
+        required=True, 
+        write_only=True, 
+        style={'input_type': 'password'},
+        label="Confirm New Password"
+    )
 
-        def validate(self, attrs):
-            user = self.context['request'].user 
-            if not user.check_password(attrs['old_password']):
-                raise serializers.ValidationError({"old_password": "Old password is not correct."})
-            
-            if attrs['password'] != attrs['password2']:
-                raise serializers.ValidationError({"password": "Password fields didn't match."})
-            return attrs
-        def save(self, **kwargs):
-            user = self.context['request'].user
-            new_password = self.validated_data['new_password']
-            user.set_password(new_password)  # This properly hashes the password
-            user.save()
-            return user
+    def validate(self, attrs):
+        user = self.context['request'].user  
+
+        old_password = attrs.get('old_password')
+        new_password = attrs.get('password')
+        new_password2 = attrs.get('password2')
+
+        if not user.check_password(old_password):
+            raise serializers.ValidationError({"old_password": "Old password is not correct."})
+
+        if new_password != new_password2:
+            raise serializers.ValidationError({"new_password": "New passwords do not match."})
+
+        return attrs
+
+    def save(self, **kwargs):
+        user = self.context['request'].user
+        new_password = self.validated_data['password']
+        user.set_password(new_password)  
+        user.save()
+        return user

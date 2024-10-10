@@ -13,4 +13,5 @@ urlpatterns = [
     path('profile/update/telephoneNumber', updateTelephone.as_view(), name='telephone-update'),
     path('profile/update/picture', updateUserImage.as_view(), name='picture-update'),
     path('profile/update/username', updateUsername.as_view(), name='username-update'),
+    path('profile/update/password', updatePassword.as_view(), name='password-update'),
 ]
