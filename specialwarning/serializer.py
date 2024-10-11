@@ -5,7 +5,7 @@ class SpecialFloodWarningSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SpecialFloodWarning
-        fields = ['name', 'long','lat', 'created_by', 'verified_by', 'image']
+        fields = '__all__'
 
     def get_latlong(self, obj):
         return f"{obj.latitude}, {obj.longitude}"
