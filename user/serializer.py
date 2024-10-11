@@ -71,40 +71,31 @@ class UserInformationDeserializer(serializers.ModelSerializer):
         except UserProfile.DoesNotExist:
             return None
 
-# class UserSearch(serializers.ModelSerializer):
-#     profile_picture = serializers.SerializerMethodField()
+class FriendSerializer(serializers.ModelSerializer):
+    profile_picture = serializers.SerializerMethodField()
+    telephone_number = serializers.SerializerMethodField()
+    username = serializers.SerializerMethodField()
 
-#     class Meta:
-#         model = User
-#         exclude = ('password', 'id')
-
-#     def validate(self, attrs):
-#         recipient_username = attrs.get('recipient_username')
-#         user = self.context['request'].user
-
-#         if user.username == recipient_username:
-#             raise serializers.ValidationError("You cannot invite yourself.")
-#         if not User.objects.filter(username=recipient_username).exists():
-#             raise serializers.ValidationError("Recipient does not exist.")
-
-#     def get_profile(self, obj):
-#         try:
-#             profile = obj.profile
-#             return profile.profile_picture.url if profile.profile_picture else None
-#         except UserProfile.DoesNotExist:
-#             return None
-    
-
-        
-
-
+    class Meta:
+        model = User
+        exclude = ('password', 'id')
 
     def get_profile_picture(self, obj):
         try:
-            profile = obj.profile
+            profile = obj.friend.profile
             return profile.profile_picture.url if profile.profile_picture else None
         except UserProfile.DoesNotExist:
             return None
+        
+    def get_telephone_number(self,obj):
+        try:
+            profile = obj.friend.profile
+            return profile.telephone_number if profile.telephone_number else None
+        except UserProfile.DoesNotExist:
+            return None
+    
+    def get_username(self,obj):
+        return obj.friend.username
 
 class SendInvitationSerializer(serializers.Serializer):
     recipient_username = serializers.CharField(required=True)

@@ -199,3 +199,11 @@ class updatePassword(APIView):
             return Response({"message": "Password updated successfully."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
+class ListFriend(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def get(self, request, *args, **kwargs):
+        friend_instances = friends.objects.filter(username=request.user)
+        serializer = FriendSerializer(friend_instances,many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
