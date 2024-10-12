@@ -62,7 +62,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class UserInformationDeserializer(serializers.ModelSerializer):
     profile_picture = serializers.SerializerMethodField()
-    # telephone_number = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -74,13 +73,6 @@ class UserInformationDeserializer(serializers.ModelSerializer):
             return profile.profile_picture.url if profile.profile_picture else None
         except UserProfile.DoesNotExist:
             return None
-    
-    # def get_telephone_number(self,obj):
-    #     try:
-    #         profile = obj.profile
-    #         return profile.telephone_number if profile.telephone_number else None
-    #     except UserProfile.DoesNotExist:
-    #         return None
 
 class getLocationSerializer(serializers.ModelSerializer):
     class Meta:
