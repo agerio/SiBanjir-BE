@@ -71,6 +71,37 @@ class UserInformationDeserializer(serializers.ModelSerializer):
         except UserProfile.DoesNotExist:
             return None
 
+class FriendSerializer(serializers.ModelSerializer):
+    profile_picture = serializers.SerializerMethodField()
+    telephone_number = serializers.SerializerMethodField()
+    username = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        exclude = ('password', 'id')
+
+    def get_profile_picture(self, obj):
+        try:
+            profile = obj.friend.profile
+            return profile.profile_picture.url if profile.profile_picture else None
+        except UserProfile.DoesNotExist:
+            return None
+        
+    def get_telephone_number(self,obj):
+        try:
+            profile = obj.friend.profile
+            return profile.telephone_number if profile.telephone_number else None
+        except UserProfile.DoesNotExist:
+            return None
+    
+    def get_username(self,obj):
+        return obj.friend.username
+
+class UserLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        include = ('lat','long')
+
 class SendInvitationSerializer(serializers.Serializer):
     recipient_username = serializers.CharField(required=True)
 
@@ -157,3 +188,4 @@ class passwordUpdateSerializer(serializers.Serializer):
         user.set_password(new_password)  
         user.save()
         return user
+    
