@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from .serializer import *
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import login
+from django.utils import timezone
 from django.contrib.auth.models import User 
 from user.models import Invitation, friends, UserProfile
 from rest_framework.authentication import TokenAuthentication
@@ -221,6 +222,9 @@ class UserLocation(APIView):
                 user.profile.save()
                 user.profile.long = serializer.validated_data['long']
                 user.profile.save()
+
+                user.last_login = timezone.now()
+                user.save()
                 return Response({"message": "location updated successfully."}, status=status.HTTP_200_OK)
         else:
             return Response({"message": "location turned off."}, status=status.HTTP_200_OK)
