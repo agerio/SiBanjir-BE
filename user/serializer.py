@@ -97,6 +97,11 @@ class FriendSerializer(serializers.ModelSerializer):
     def get_username(self,obj):
         return obj.friend.username
 
+class UserLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        include = ('lat','long')
+
 class SendInvitationSerializer(serializers.Serializer):
     recipient_username = serializers.CharField(required=True)
 
@@ -183,3 +188,4 @@ class passwordUpdateSerializer(serializers.Serializer):
         user.set_password(new_password)  
         user.save()
         return user
+    

@@ -15,3 +15,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     profile_picture = CloudinaryField('image', null=True, blank=True)
     telephone_number = models.CharField(max_length=20, blank=True, null=True)
+    # long = models.DecimalField(max_digits=35, decimal_places=23)
+    # lat = models.DecimalField(max_digits=35, decimal_places=23)
+    # allow_location = models.BooleanField()
+    
