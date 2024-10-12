@@ -115,6 +115,7 @@ class FriendSerializer(serializers.ModelSerializer):
 
 class UserLocationSerializer(serializers.ModelSerializer):
     friend_username = serializers.SerializerMethodField()
+    friend_profile_picture = serializers.SerializerMethodField()
     lat = serializers.SerializerMethodField()
     long = serializers.SerializerMethodField()
     class Meta:
@@ -125,6 +126,12 @@ class UserLocationSerializer(serializers.ModelSerializer):
         user = obj.friend
         return user.username
 
+    def get_friend_profile_picture(self,obj):
+        try:
+            profile = obj.friend.profile
+            return profile.profile_picture.url if profile.profile_picture else None
+        except UserProfile.DoesNotExist:
+            return None
 
     def get_lat(self,obj):
         try:
