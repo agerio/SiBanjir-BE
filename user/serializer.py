@@ -21,6 +21,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             username=validated_data['username'],
             password=validated_data['password']
         )
+        UserProfile.objects.create(
+            user_id = user.id
+        )
         return user
 
 class UserLoginSerializer(serializers.Serializer):
@@ -59,6 +62,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class UserInformationDeserializer(serializers.ModelSerializer):
     profile_picture = serializers.SerializerMethodField()
+    telephone_number = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -70,7 +74,19 @@ class UserInformationDeserializer(serializers.ModelSerializer):
             return profile.profile_picture.url if profile.profile_picture else None
         except UserProfile.DoesNotExist:
             return None
+    
+    def get_telephone_number(self,obj):
+        try:
+            profile = obj.profile
+            return profile.telephone_number if profile.telephone_number else None
+        except UserProfile.DoesNotExist:
+            return None
 
+class getLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ('long', 'lat')
+        
 class FriendSerializer(serializers.ModelSerializer):
     profile_picture = serializers.SerializerMethodField()
     telephone_number = serializers.SerializerMethodField()
@@ -98,9 +114,31 @@ class FriendSerializer(serializers.ModelSerializer):
         return obj.friend.username
 
 class UserLocationSerializer(serializers.ModelSerializer):
+    friend_username = serializers.SerializerMethodField()
+    lat = serializers.SerializerMethodField()
+    long = serializers.SerializerMethodField()
     class Meta:
-        model = UserProfile
-        include = ('lat','long')
+        model = User
+        exclude = ('password','id')
+
+    def get_friend_username(self,obj):
+        user = obj.friend
+        return user.username
+
+
+    def get_lat(self,obj):
+        try:
+            profile = obj.friend.profile
+            return profile.lat if profile.lat else None
+        except UserProfile.DoesNotExist:
+            return None
+    def get_long(self,obj):
+        try:
+            profile = obj.friend.profile
+            return profile.long if profile.long else None
+        except UserProfile.DoesNotExist:
+            return None
+
 
 class SendInvitationSerializer(serializers.Serializer):
     recipient_username = serializers.CharField(required=True)

@@ -16,4 +16,5 @@ urlpatterns = [
     path('profile/update/password', updatePassword.as_view(), name='password-update'),
     path('searchFriend', UserInformation.as_view(), name='search-user'),
     path('listFriend', ListFriend.as_view(), name='list-friend'),
+    path('sendLocation',UserLocation.as_view(),name='send-location')
 ]

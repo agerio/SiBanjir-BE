@@ -214,11 +214,20 @@ class UserLocation(APIView):
 
     def post(self,request, *args, **kwargs):
         user = request.user
-        serializer = UserLocationSerializer(request.data)
+        serializer = getLocationSerializer(data=request.data)
         if serializer.is_valid():
             user.profile.lat = serializer.validated_data['lat']
-            user.save()
+            user.profile.save()
             user.profile.long = serializer.validated_data['long']
-            user.save()
+            user.profile.save()
             return Response({"message": "location updated successfully."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get(self,request, *args, **kwargs):
+        friend_instances = friends.objects.filter(username=request.user)
+        serializer = UserLocationSerializer(friend_instances,many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+
+
+        
