@@ -215,19 +215,36 @@ class UserLocation(APIView):
     def post(self,request, *args, **kwargs):
         user = request.user
         serializer = getLocationSerializer(data=request.data)
-        if serializer.is_valid():
-            user.profile.lat = serializer.validated_data['lat']
-            user.profile.save()
-            user.profile.long = serializer.validated_data['long']
-            user.profile.save()
-            return Response({"message": "location updated successfully."}, status=status.HTTP_200_OK)
+        if request.user.profile.allow_location == True:
+            if serializer.is_valid():
+                user.profile.lat = serializer.validated_data['lat']
+                user.profile.save()
+                user.profile.long = serializer.validated_data['long']
+                user.profile.save()
+                return Response({"message": "location updated successfully."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "location turned off."}, status=status.HTTP_200_OK)
+
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def get(self,request, *args, **kwargs):
         friend_instances = friends.objects.filter(username=request.user)
         serializer = UserLocationSerializer(friend_instances,many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-        
+    
 
+class switchLocation(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
 
-        
+    def post(self,request, *args, **kwargs):
+        profile = request.user.profile
+        location_status = profile.allow_location
+        if location_status == False:
+            profile.allow_location = True
+            profile.save()
+        else:
+            profile.allow_location = False
+            profile.save()
+        return Response({"message": "location switched successfully."}, status=status.HTTP_200_OK)
