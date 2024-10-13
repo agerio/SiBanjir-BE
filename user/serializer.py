@@ -88,30 +88,24 @@ class getLocationSerializer(serializers.ModelSerializer):
         fields = ('long', 'lat')
         
 class FriendSerializer(serializers.ModelSerializer):
-    profile_picture = serializers.SerializerMethodField()
-    telephone_number = serializers.SerializerMethodField()
     username = serializers.SerializerMethodField()
 
     class Meta:
-        model = User
-        exclude = ('password', 'id')
+        model = UserProfile
+        exclude = ('user', 'long', 'lat')
 
-    def get_profile_picture(self, obj):
-        try:
-            profile = obj.friend.profile
-            return profile.profile_picture.url if profile.profile_picture else None
-        except UserProfile.DoesNotExist:
-            return None
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
         
-    def get_telephone_number(self,obj):
-        try:
-            profile = obj.friend.profile
-            return profile.telephone_number if profile.telephone_number else None
-        except UserProfile.DoesNotExist:
-            return None
-    
+        if instance.profile_picture:
+            representation['profile_picture'] = instance.profile_picture.url
+        else:
+            representation['profile_picture'] = None
+
+        return representation
+
     def get_username(self,obj):
-        return obj.friend.username
+        return obj.user.username
 
 class UserLocationSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()

@@ -243,9 +243,12 @@ class ListFriend(APIView):
     authentication_classes = [TokenAuthentication]
 
     def get(self, request, *args, **kwargs):
-        friend_instances = friends.objects.filter(username=request.user)
-        friend_instances2 = friends.objects.filter(friend=request.user)
-        serializer = FriendSerializer(friend_instances | friend_instances2, many=True)
+        friends_of_user = friends.objects.filter(friend=request.user).values_list('username', flat=True)
+        users_who_are_friends = friends.objects.filter(username=request.user).values_list('friend', flat=True)
+        combined_friends = set(friends_of_user) | set(users_who_are_friends)
+        user_profiles = UserProfile.objects.filter(user__in=combined_friends)
+
+        serializer = FriendSerializer(user_profiles, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class UserLocation(APIView):
@@ -272,9 +275,11 @@ class UserLocation(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def get(self,request, *args, **kwargs):
-        friend_users = friends.objects.filter(friend=request.user).values_list('friend', flat=True) |\
-            friends.objects.filter(username=request.user).values_list('friend', flat=True)
-        user_profiles = UserProfile.objects.filter(user__in=friend_users, allow_location=True)
+        friends_of_user = friends.objects.filter(friend=request.user).values_list('username', flat=True)
+        users_who_are_friends = friends.objects.filter(username=request.user).values_list('friend', flat=True)
+        combined_friends = set(friends_of_user) | set(users_who_are_friends)
+        user_profiles = UserProfile.objects.filter(user__in=combined_friends)
+        
         serializer = UserLocationSerializer(user_profiles, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
