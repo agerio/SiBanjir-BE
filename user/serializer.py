@@ -115,6 +115,8 @@ class FriendSerializer(serializers.ModelSerializer):
 
 class UserLocationSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
+    last_login = serializers.SerializerMethodField()
+    
     class Meta:
         model = UserProfile
         exclude = ['allow_location', 'id']
@@ -131,6 +133,9 @@ class UserLocationSerializer(serializers.ModelSerializer):
     
     def get_username(self, obj):
         return obj.user.username
+    
+    def get_last_login(self, obj):
+        return obj.user.last_login
 
 class SendInvitationSerializer(serializers.Serializer):
     recipient_username = serializers.CharField(required=True)

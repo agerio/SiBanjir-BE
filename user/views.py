@@ -289,7 +289,7 @@ class switchLocation(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self,request, *args, **kwargs):
-        profile = request.user.profile
+        profile, created = UserProfile.objects.get_or_create(user=request.user)
         location_status = profile.allow_location
         if location_status == False:
             profile.allow_location = True
