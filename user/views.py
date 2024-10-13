@@ -255,5 +255,7 @@ class switchLocation(APIView):
             profile.save()
         else:
             profile.allow_location = False
+            profile.lat = None
+            profile.long = None
             profile.save()
         return Response({"message": "location switched successfully."}, status=status.HTTP_200_OK)
