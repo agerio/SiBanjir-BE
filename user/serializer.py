@@ -114,58 +114,26 @@ class FriendSerializer(serializers.ModelSerializer):
         return obj.friend.username
 
 class UserLocationSerializer(serializers.ModelSerializer):
-    friend_username = serializers.SerializerMethodField()
-    friend_profile_picture = serializers.SerializerMethodField()
-    lat = serializers.SerializerMethodField()
-    long = serializers.SerializerMethodField()
+    username = serializers.SerializerMethodField()
     class Meta:
-        model = User
-        exclude = ('password','id')
+        model = UserProfile
+        exclude = ['allow_location', 'id']
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        
+        if instance.profile_picture:
+            representation['profile_picture'] = instance.profile_picture.url
+        else:
+            representation['profile_picture'] = None
 
-    def get_friend_username(self,obj):
-        user = obj.friend
-        return user.username
-
-    def get_friend_profile_picture(self,obj):
-        try:
-            profile = obj.friend.profile
-            return profile.profile_picture.url if profile.profile_picture else None
-        except UserProfile.DoesNotExist:
-            return None
-
-    def get_lat(self,obj):
-        try:
-            profile = obj.friend.profile
-            return profile.lat if profile.lat else None
-        except UserProfile.DoesNotExist:
-            return None
-    def get_long(self,obj):
-        try:
-            profile = obj.friend.profile
-            return profile.long if profile.long else None
-        except UserProfile.DoesNotExist:
-            return None
-
+        return representation
+    
+    def get_username(self, obj):
+        return obj.user.username
 
 class SendInvitationSerializer(serializers.Serializer):
     recipient_username = serializers.CharField(required=True)
-
-    def validate(self, attrs):
-        recipient_username = attrs.get('recipient_username')
-        user = self.context['request'].user
-        
-        if user.username == recipient_username:
-            raise serializers.ValidationError("You cannot invite yourself.")
-
-        if not User.objects.filter(username=recipient_username).exists():
-            raise serializers.ValidationError("Recipient does not exist.")
-
-        recipient = User.objects.get(username=recipient_username)
-
-        if Invitation.objects.filter(sender=user, recipient=recipient).exists():
-            raise serializers.ValidationError("You have already sent an invitation to this user.")
-
-        return attrs
 
 class listInvitationSerializer(serializers.Serializer):
     sender = serializers.CharField(source='sender.username')
@@ -176,11 +144,6 @@ class listInvitationSerializer(serializers.Serializer):
 
 class createFriendsSerializer(serializers.Serializer):
     sender = serializers.CharField(required=True)
-
-    def validate(self, attrs):
-        if not User.objects.filter(username=attrs['sender']).exists():
-            raise serializers.ValidationError("Sender does not exist.")
-        return attrs
     
 class ProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -235,6 +198,7 @@ class passwordUpdateSerializer(serializers.Serializer):
         return user
     
 class UserLocationStatusSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = UserProfile
         fields = ['allow_location']

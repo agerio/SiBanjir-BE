@@ -85,14 +85,42 @@ class SendInvitationView(APIView):
 
     def post(self, request, *args, **kwargs):
         serializer = SendInvitationSerializer(data=request.data, context={'request': request})
+        
         if serializer.is_valid():
-            recipient = User.objects.get(username=serializer.validated_data['recipient_username'])
+            # Check recipient validity
+            recipient_username = serializer.validated_data['recipient_username']
+            try:
+                recipient = User.objects.get(username=recipient_username)
+            except User.DoesNotExist:
+                return Response({"error": "Recipient does not exist"},
+                                status=status.HTTP_404_NOT_FOUND)
+            if recipient == request.user:
+                return Response({"error": "You can't send an invitation to yourself"},
+                                status=status.HTTP_404_NOT_FOUND)
+
+            # Check if they are already friends
+            if friends.objects.filter(username=request.user, friend=recipient).exists() or \
+               friends.objects.filter(username=recipient, friend=request.user).exists():
+                return Response({"error": "You are already friends with this user"},
+                                status=status.HTTP_400_BAD_REQUEST)
+            
+            # Check if an existing invitation already exist
+            if Invitation.objects.filter(sender=request.user, recipient=recipient).exists():
+                return Response({"error": "Existing invitation found."},
+                                status=status.HTTP_400_BAD_REQUEST)
+            elif Invitation.objects.filter(sender=recipient, recipient=request.user).exists():
+                return Response({"error": "You have received an invitation from the recipient."},
+                                status=status.HTTP_400_BAD_REQUEST)
+                                
+
             Invitation.objects.create(
                 sender=request.user,
                 recipient=recipient,
             )
             return Response({"message": "Invitation sent successfully"}, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     
 class listInvitationView(APIView):
     permission_classes = [IsAuthenticated]
@@ -100,24 +128,9 @@ class listInvitationView(APIView):
 
     def get(self, request, *args, **kwargs):
         user = User.objects.get(username=request.user)
-        invitation = Invitation.objects.filter(recipient=user)
+        invitation = Invitation.objects.filter(recipient=user, accepted=False)
         serializer = listInvitationSerializer(invitation, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-class FindUserByUsername(APIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
-
-    def get(self, request):
-        username = request.query_params.get('username', '')
-        if not username:
-            return Response({"error": "Please provide a username"}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            user = User.objects.get(username=username)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except User.DoesNotExist:
-            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
     
 class createFriend(APIView):
     permission_classes = [IsAuthenticated]
@@ -125,16 +138,41 @@ class createFriend(APIView):
 
     def post(self, request, *args, **kwargs):
         serializer = createFriendsSerializer(data=request.data)
+
         if serializer.is_valid():
-            sender = User.objects.get(username=serializer.validated_data['sender'])
+            # Check if sender exists
+            sender_username = serializer.validated_data['sender']
+            try:
+                sender = User.objects.get(username=sender_username)
+            except User.DoesNotExist:
+                return Response({"error": "User does not exist"},
+                                status=status.HTTP_404_NOT_FOUND)
+            
+            # Check if invitation exist
+            try:
+                invitation = Invitation.objects.get(sender=sender, recipient=request.user)
+                invitation.is_accepted = True
+                invitation.save()
+            except Invitation.DoesNotExist:
+                return Response({"error": "Invitation not found"},
+                                status=status.HTTP_404_NOT_FOUND)
+            
+            # Check if they are already friends
+            if friends.objects.filter(username=request.user, friend=sender).exists() or \
+               friends.objects.filter(username=sender, friend=request.user).exists():
+                return Response({"error": "You are already friends with this user"},
+                                status=status.HTTP_400_BAD_REQUEST)
+
             friends.objects.create(
                 username=request.user,
                 friend=sender
             )
             return Response({"message": "Friend added successfully"}, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     
-class DeleteInvitationView(APIView):  # New view for deleting invitations
+class DeleteInvitationView(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
 
@@ -206,7 +244,8 @@ class ListFriend(APIView):
 
     def get(self, request, *args, **kwargs):
         friend_instances = friends.objects.filter(username=request.user)
-        serializer = FriendSerializer(friend_instances,many=True)
+        friend_instances2 = friends.objects.filter(friend=request.user)
+        serializer = FriendSerializer(friend_instances | friend_instances2, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class UserLocation(APIView):
@@ -233,8 +272,10 @@ class UserLocation(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def get(self,request, *args, **kwargs):
-        friend_instances = friends.objects.filter(username=request.user)
-        serializer = UserLocationSerializer(friend_instances,many=True)
+        friend_users = friends.objects.filter(friend=request.user).values_list('friend', flat=True) |\
+            friends.objects.filter(username=request.user).values_list('friend', flat=True)
+        user_profiles = UserProfile.objects.filter(user__in=friend_users, allow_location=True)
+        serializer = UserLocationSerializer(user_profiles, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 
@@ -243,7 +284,7 @@ class switchLocation(APIView):
     authentication_classes = [TokenAuthentication]
 
     def get(self,request, *args, **kwargs):
-        profile = request.user.profile
+        profile, created = UserProfile.objects.get_or_create(user=request.user)
         serializer = UserLocationStatusSerializer(profile)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
