@@ -258,4 +258,5 @@ class switchLocation(APIView):
             profile.lat = None
             profile.long = None
             profile.save()
-        return Response({"message": "location switched successfully."}, status=status.HTTP_200_OK)
+        serializer = UserLocationStatusSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
