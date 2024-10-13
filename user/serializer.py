@@ -234,3 +234,7 @@ class passwordUpdateSerializer(serializers.Serializer):
         user.save()
         return user
     
+class UserLocationStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ['allow_location']

@@ -242,6 +242,11 @@ class switchLocation(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
 
+    def get(self,request, *args, **kwargs):
+        profile = request.user.profile
+        serializer = UserLocationStatusSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def post(self,request, *args, **kwargs):
         profile = request.user.profile
         location_status = profile.allow_location
