@@ -9,5 +9,5 @@ class SpecialFloodWarning(models.Model):
     created_by = models.ForeignKey(User, related_name='created_by', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     verified_by = models.ManyToManyField(User, null=True, blank=True)
-    denied_by = models.ManyToManyField(User, null=True, blank=True)
+    denied_by = models.ManyToManyField(User, null=True, blank=True, related_name='denied_special_flood_warnings')
     image = CloudinaryField('image', null=True, blank=True)
