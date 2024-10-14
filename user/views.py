@@ -151,7 +151,7 @@ class createFriend(APIView):
             # Check if invitation exist
             try:
                 invitation = Invitation.objects.get(sender=sender, recipient=request.user)
-                invitation.is_accepted = True
+                invitation.accepted = True
                 invitation.save()
             except Invitation.DoesNotExist:
                 return Response({"error": "Invitation not found"},
