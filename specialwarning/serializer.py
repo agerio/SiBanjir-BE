@@ -12,6 +12,11 @@ class SpecialFloodWarningSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['created_by'] = instance.created_by.username
 
+        if instance.image:
+            representation['image'] = instance.image.url
+        else:
+            representation['image'] = None
+
         return representation
 
     def get_profile_picture(self, obj):
