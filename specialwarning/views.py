@@ -8,12 +8,15 @@ from .serializer import *
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from datetime import timedelta
 
 class SpecialFloodWarningListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        warnings = SpecialFloodWarning.objects.all()
+        now = timezone.now()
+        one_day_ago = now - timedelta(days=1)
+        warnings = SpecialFloodWarning.objects.filter(created_at__gte=one_day_ago)
 
         serializer = SpecialFloodWarningSerializer(warnings, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
