@@ -46,6 +46,9 @@ class VerifySpecialFloodWarningView(APIView):
         if request.user in warning.verified_by.all():
             return Response({"detail": "You have already verified this warning."}, status=status.HTTP_400_BAD_REQUEST)
 
+        if request.user in warning.denied_by.all():
+            return Response({"detail": "You have already denied this warning."}, status=status.HTTP_400_BAD_REQUEST)
+
         warning.verified_by.add(request.user)
         warning.save()
 
@@ -62,6 +65,9 @@ class DenySpecialFloodWarningView(APIView):
             return Response({"detail": "You cannot deny your own warning."}, status=status.HTTP_400_BAD_REQUEST)
 
         if request.user in warning.verified_by.all():
+            return Response({"detail": "You have already verified this warning."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if request.user in warning.denied_by_by.all():
             return Response({"detail": "You have already denied this warning."}, status=status.HTTP_400_BAD_REQUEST)
 
         warning.denied_by.add(request.user)
