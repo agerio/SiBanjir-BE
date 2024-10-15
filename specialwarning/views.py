@@ -15,7 +15,7 @@ class SpecialFloodWarningListCreateView(APIView):
     def get(self, request):
         warnings = SpecialFloodWarning.objects.all()
 
-        serializer = SpecialFloodWarningSerializer(warnings, many=True)
+        serializer = SpecialFloodWarningSerializer(warnings, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):

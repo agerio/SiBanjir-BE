@@ -3,6 +3,9 @@ from .models import SpecialFloodWarning
 
 class SpecialFloodWarningSerializer(serializers.ModelSerializer):
     profile_picture = serializers.SerializerMethodField()
+    has_verified = serializers.SerializerMethodField()
+    has_denied = serializers.SerializerMethodField()
+    is_creator = serializers.SerializerMethodField()
 
     class Meta:
         model = SpecialFloodWarning
@@ -24,3 +27,15 @@ class SpecialFloodWarningSerializer(serializers.ModelSerializer):
         if profile and profile.profile_picture:
             return profile.profile_picture.url
         return None
+    
+    def get_has_verified(self, obj):
+        request_user = self.context['request'].user
+        return obj.verified_by.filter(id=request_user.id).exists()
+
+    def get_has_denied(self, obj):
+        request_user = self.context['request'].user
+        return obj.denied_by.filter(id=request_user.id).exists()
+    
+    def get_is_creator(self, obj):
+        request_user = self.context['request'].user
+        return obj.created_by == request_user
