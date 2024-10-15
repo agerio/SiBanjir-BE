@@ -26,7 +26,7 @@ class SpecialFloodWarningListCreateView(APIView):
         data['created_by'] = request.user.id
         data['created_at'] = timezone.now()
 
-        serializer = SpecialFloodWarningSerializer(data=data)
+        serializer = SpecialFloodWarningSerializer(data=data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
