@@ -59,7 +59,7 @@ class GovAPIRefresh(APIView):
                 obs_time = cells[1].get_text(strip=True) if len(cells) > 1 else ""
                 hgt = float(cells[2].get_text(strip=True).rstrip('^')) if len(cells) > 2 and cells[2].get_text(strip=True) else None
                 tendency = cells[3].get_text(strip=True) if len(cells) > 3 else ""
-                classif = cells[5].get_text(strip=True) if len(cells) > 5 else ""
+                classif = cells[5].get_text(strip=True) if len(cells) > 5 else "unknown"
 
                 stn_data[stn_num] = {
                     'area_id': area_id,
