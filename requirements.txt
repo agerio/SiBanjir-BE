@@ -11,3 +11,4 @@ typing_extensions==4.7.1
 django-cloudinary-storage
 urllib3==1.26.6
 tzdata==2023.3
+beautifulsoup4
