@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'user',
     'specialwarning',
     'notification',
+    'govapi',
     'rest_framework.authtoken',
     'cloudinary',
     'cloudinary_storage',
