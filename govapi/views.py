@@ -66,7 +66,7 @@ class GovAPIRefresh(APIView):
                     'obs_time': obs_time,
                     'hgt': hgt,
                     'tendency': tendency,
-                    'classif': classif,
+                    'classif': classif if classif else "unknown",
                 }
 
         parsed_data = []
